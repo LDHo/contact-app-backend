@@ -1,0 +1,14 @@
+{
+  "ids": {
+    "MyUser": 2,
+    "UserCredentials": 2
+  },
+  "models": {
+    "MyUser": {
+      "1261b1c1-c856-4cc7-b746-e147fbec7947": "{\"id\":\"1261b1c1-c856-4cc7-b746-e147fbec7947\",\"email\":\"liande3122@gmail.com\",\"password\":\"04ab61aeb8978104846c4d88cf11fcb503ebcde6a75bd55025d91e30a5e9354bd1ea73650f7312862380acf16fbb88a453269625e33a2bd86e26958e4a738097\",\"passwordSalt\":\"d8005bff288aacb1136784b6073737a2\",\"lastName\":\"Lian De\",\"firstName\":\"Ho\",\"birthday\":\"2021-02-28T16:00:00.000Z\",\"ssn\":\"b83e88788a830593e116c1\",\"iv\":\"ff9e0d38cf9c748ca3a90b6e3900d7b5\"}"
+    },
+    "UserCredentials": {
+      "cefc30db-6992-46c6-9c92-57bd9cdf8095": "{\"id\":\"cefc30db-6992-46c6-9c92-57bd9cdf8095\",\"password\":\"04ab61aeb8978104846c4d88cf11fcb503ebcde6a75bd55025d91e30a5e9354bd1ea73650f7312862380acf16fbb88a453269625e33a2bd86e26958e4a738097\",\"userId\":\"1261b1c1-c856-4cc7-b746-e147fbec7947\"}"
+    }
+  }
+}
