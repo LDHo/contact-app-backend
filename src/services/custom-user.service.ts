@@ -76,7 +76,9 @@ export class CustomUserService implements UserService<MyUser, Credentials> {
     return {
       [securityId]: user.id as string,
       id: user.id,
-      email: user.email
+      email: user.email,
+      lastName: user.lastName,
+      firstName: user.firstName
     };
   }
 }

@@ -162,6 +162,7 @@ export class UserController {
     const modifiedUser = JSON.parse(JSON.stringify(foundUser));
     delete modifiedUser['password'];
     delete modifiedUser['passwordSalt'];
+    delete modifiedUser['iv'];
     if (foundUser.ssn && foundUser.iv) {
       const encryptedData: EncryptedData = {
         data: foundUser.ssn,
