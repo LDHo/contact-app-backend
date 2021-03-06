@@ -22,6 +22,7 @@ export class RegisterRequestModel {
       // pattern: '',
       minLength: 8,
       maxLength: 100,
+      pattern: '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)'
     }
   })
   password: string;
@@ -53,7 +54,8 @@ export class ContactFormModel {
   @property({
     type: 'string',
     jsonSchema: {
-      pattern: '^(?!666|000|9\\d{2})\\d{3}-(?!00)\\d{2}-(?!0{4})\\d{4}$'
+      pattern: '^(?!666|000|9\\d{2})\\d{3}-(?!00)\\d{2}-(?!0{4})\\d{4}$',
+      uniqueItems: true
     }
   })
   ssn: string;
@@ -63,8 +65,5 @@ export class ContactFormModel {
     required: true
   })
   birthday: string;
-
-  // iv does not require for front end to fill up
-  iv: string;
 }
 

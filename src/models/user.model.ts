@@ -104,15 +104,15 @@ export class MyUser extends Entity {
   })
   ssn?: string;
 
-  @property({
-    type: 'string',
-    required: false,
-    mysql: {
-      columnName: 'iv',
-      nullable: 'Y'
-    }
-  })
-  iv?: string;
+  // @property({
+  //   type: 'string',
+  //   required: false,
+  //   mysql: {
+  //     columnName: 'iv',
+  //     nullable: 'Y'
+  //   }
+  // })
+  // iv?: string;
 
   @hasOne(() => MyUserCredentials, {keyTo: 'userId'})
   userCredentials: MyUserCredentials;

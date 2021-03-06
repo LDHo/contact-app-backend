@@ -13,7 +13,6 @@ function compare(
   storeHashedPassword: string,
   salt: string
 ): boolean {
-  console.log({enteredPassword, storeHashedPassword, salt});
   const pepper = process.env.PEPPER;
   const hashedPassword = crypto.pbkdf2Sync(enteredPassword, salt + pepper, 1000, 64, 'sha512').toString('hex');
   return hashedPassword === storeHashedPassword;

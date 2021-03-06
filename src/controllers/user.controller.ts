@@ -20,7 +20,7 @@ import {SecurityBindings, securityId, UserProfile} from '@loopback/security';
 import {MyUser} from '../models';
 import {ContactFormModel, RegisterRequestModel} from '../models/custom.request.model';
 import {UserRepository} from '../repositories';
-import {CryptoService, EncryptedData} from '../services/crypto.service';
+import {CryptoService} from '../services/crypto.service';
 import {CustomUserService} from '../services/custom-user.service';
 import {log} from '../shared/logger';
 
@@ -163,13 +163,6 @@ export class UserController {
     delete modifiedUser['password'];
     delete modifiedUser['passwordSalt'];
     delete modifiedUser['iv'];
-    if (foundUser.ssn && foundUser.iv) {
-      const encryptedData: EncryptedData = {
-        data: foundUser.ssn,
-        iv: foundUser.iv
-      };
-      modifiedUser['ssn'] = CryptoService.decrypt(encryptedData);
-    }
     return modifiedUser;
   }
 
@@ -188,10 +181,15 @@ export class UserController {
     })
     user: ContactFormModel,
   ): Promise<void> {
-    const {iv, encryptedData} = CryptoService.encrypt(user.ssn);
-    user['ssn'] = encryptedData;
-    user['iv'] = iv;
     const userId = currentUserProfile[securityId];
+    const userWithSameSSN: MyUser | null = await this.userRepository.findOne({
+      where: {
+        ssn: user.ssn
+      }
+    });
+    if (userWithSameSSN && userWithSameSSN.id !== userId) {
+      throw new HttpErrors.BadRequest('Invalid Request Please contact support');
+    }
     const response = await this.userRepository.updateById(userId, user);
     return response;
   }
