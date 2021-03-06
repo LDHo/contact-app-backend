@@ -12,6 +12,7 @@ import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {DbDataSource} from './datasources';
 import {UserRepository} from './repositories';
+import {MyUserCredentialsRepository} from './repositories/user-credentials.repository';
 import {MySequence} from './sequence';
 import {CustomUserService} from './services/custom-user.service';
 
@@ -47,8 +48,9 @@ export class BackendApplication extends BootMixin(
     };
     this.component(AuthenticationComponent);
     this.component(JWTAuthenticationComponent);
-    this.dataSource(DbDataSource, UserServiceBindings.DATASOURCE_NAME);
+    this.dataSource(DbDataSource, 'db');
     this.bind(UserServiceBindings.USER_SERVICE).toClass(CustomUserService);
     this.bind(UserServiceBindings.USER_REPOSITORY).toClass(UserRepository);
+    this.bind(UserServiceBindings.USER_CREDENTIALS_REPOSITORY).toClass(MyUserCredentialsRepository);
   }
 }

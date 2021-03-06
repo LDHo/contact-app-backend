@@ -1,19 +1,15 @@
 import {authenticate, TokenService} from '@loopback/authentication';
 import {
   Credentials,
-  RefreshtokenService,
-  RefreshTokenServiceBindings,
-
   TokenServiceBindings,
-
   UserServiceBindings
 } from '@loopback/authentication-jwt';
-import {inject} from '@loopback/core';
+import {inject, intercept} from '@loopback/core';
 import {repository} from '@loopback/repository';
 import {
   get,
-  getModelSchemaRef, HttpErrors,
-  param,
+  HttpErrors,
+
   patch,
   post,
   requestBody,
@@ -22,33 +18,11 @@ import {
 } from '@loopback/rest';
 import {SecurityBindings, securityId, UserProfile} from '@loopback/security';
 import {MyUser} from '../models';
+import {ContactFormModel, RegisterRequestModel} from '../models/custom.request.model';
 import {UserRepository} from '../repositories';
 import {CryptoService, EncryptedData} from '../services/crypto.service';
 import {CustomUserService} from '../services/custom-user.service';
-
-type RefreshGrant = {
-  refreshToken: string;
-};
-
-// Describes the schema of grant object
-const RefreshGrantSchema: SchemaObject = {
-  type: 'object',
-  required: ['refreshToken'],
-  properties: {
-    refreshToken: {
-      type: 'string',
-    },
-  },
-};
-
-// Describes the request body of grant object
-const RefreshGrantRequestBody = {
-  description: 'Reissuing Acess Token',
-  required: true,
-  content: {
-    'application/json': {schema: RefreshGrantSchema},
-  },
-};
+import {log} from '../shared/logger';
 
 const CredentialsSchema: SchemaObject = {
   type: 'object',
@@ -73,7 +47,9 @@ export const CredentialsRequestBody = {
   },
 };
 
+@intercept(log)
 export class UserController {
+
   constructor(
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,
@@ -82,9 +58,7 @@ export class UserController {
     @inject(SecurityBindings.USER, {optional: true})
     public user: UserProfile,
     @repository(UserRepository)
-    protected userRepository: UserRepository,
-    @inject(RefreshTokenServiceBindings.REFRESH_TOKEN_SERVICE)
-    public refreshService: RefreshtokenService,
+    protected userRepository: UserRepository
   ) { }
 
   @post('/users/register', {
@@ -97,21 +71,11 @@ export class UserController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(MyUser, {
-            exclude: [
-              'id',
-              'passwordSalt',
-              'lastName',
-              'firstName',
-              'birthday',
-              'ssn',
-              'iv'
-            ]
-          })
+          schema: {'x-ts-type': RegisterRequestModel}
         },
       },
     })
-    user: MyUser,
+    user: RegisterRequestModel,
   ) {
     const foundUser = await this.userRepository.findOne({
       where: {
@@ -122,18 +86,23 @@ export class UserController {
       const emailUsed = 'Email has already been used';
       throw new HttpErrors.BadRequest(emailUsed);
     }
+
     const userPassword = user.password;
     let {salt, hashedData} = CryptoService.hashingData(userPassword, process.env.PEPPER as string);
-    const modifiedUser: MyUser = JSON.parse(JSON.stringify(user));
-    modifiedUser['password'] = hashedData;
-    modifiedUser['passwordSalt'] = salt;
+
+    // create a record with only email
+    const modifiedUser = JSON.parse(JSON.stringify(user));
+
+    // password will be stored in the user_credentials
+    delete modifiedUser['password'];
+
     const savedUser = await this.userRepository.create(modifiedUser);
     await this.userRepository.userCredentials(savedUser.id).create({
-      password: hashedData
+      password: hashedData,
+      passwordSalt: salt
     });
     return savedUser;
   }
-
 
   @post('/users/login', {
     responses: {
@@ -184,6 +153,12 @@ export class UserController {
   ): Promise<MyUser> {
     const userId = currentUserProfile[securityId];
     const foundUser = await this.userRepository.findById(userId);
+
+    if (!foundUser) {
+      // @todo - logging
+      throw new HttpErrors.Unauthorized();
+    }
+
     const modifiedUser = JSON.parse(JSON.stringify(foundUser));
     delete modifiedUser['password'];
     delete modifiedUser['passwordSalt'];
@@ -198,36 +173,25 @@ export class UserController {
   }
 
   @authenticate('jwt')
-  @patch('/users/update/{id}')
+  @patch('/users/update')
   @response(204, {
     description: 'User PATCH success',
   })
   async updateById(
-    @param.path.string('id') id: string,
+    @inject(SecurityBindings.USER)
+    currentUserProfile: UserProfile,
     @requestBody({
       content: {
-        'application/json': {
-          schema: getModelSchemaRef(MyUser, {
-            partial: true,
-            exclude: [
-              'id',
-              'email',
-              'password',
-              'passwordSalt',
-              'iv'
-            ]
-          }),
-        },
+        'application/json': {schema: {'x-ts-type': ContactFormModel}},
       },
     })
-    user: MyUser,
+    user: ContactFormModel,
   ): Promise<void> {
-    if (user.ssn) {
-      const {iv, encryptedData} = CryptoService.encrypt(user.ssn);
-      user['ssn'] = encryptedData;
-      user['iv'] = iv;
-    }
-    const response = await this.userRepository.updateById(id, user);
+    const {iv, encryptedData} = CryptoService.encrypt(user.ssn);
+    user['ssn'] = encryptedData;
+    user['iv'] = iv;
+    const userId = currentUserProfile[securityId];
+    const response = await this.userRepository.updateById(userId, user);
     return response;
   }
 }

@@ -29,8 +29,12 @@ export class CustomUserService implements UserService<MyUser, Credentials> {
 
 
   constructor(
-    @repository(UserRepository) public userRepository: UserRepository
+    @repository(UserRepository) public userRepository: UserRepository,
   ) {
+  }
+
+  findUserFromUserRepository() {
+    this.userRepository.findOne()
   }
 
   async verifyCredentials(credentials: Credentials): Promise<MyUser> {
@@ -42,25 +46,28 @@ export class CustomUserService implements UserService<MyUser, Credentials> {
     });
 
     if (!foundUser) {
+      // @todo - logging
       throw new HttpErrors.Unauthorized(invalidCredentialsError);
     }
 
-    const credentialsFound = await this.userRepository.findCredentials(
-      foundUser.id,
-    );
+    const credentialsFound = await this.userRepository.findCredentials(foundUser.id);
+
     if (!credentialsFound) {
+      // @todo - logging
       throw new HttpErrors.Unauthorized(invalidCredentialsError);
     }
 
     const passwordMatched = compare(
       credentials.password,
       credentialsFound.password,
-      foundUser.passwordSalt
+      credentialsFound.passwordSalt
     );
 
     if (!passwordMatched) {
+      // @todo - logging
       throw new HttpErrors.Unauthorized(invalidCredentialsError);
     }
+    // @todo -logging
     return foundUser;
   }
 
@@ -69,7 +76,7 @@ export class CustomUserService implements UserService<MyUser, Credentials> {
     return {
       [securityId]: user.id as string,
       id: user.id,
-      email: user.email,
+      email: user.email
     };
   }
 }

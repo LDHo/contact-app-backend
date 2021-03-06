@@ -25,8 +25,6 @@ export class CryptoService {
     let decipher = crypto.createDecipheriv(ENCRYPTION_ALGO, Buffer.from(ENC_KEY as string, 'hex'), iv);
     let decrypted = decipher.update(encryptedText);
     return Buffer.from(decrypted).toString();
-    // decrypted = Buffer.concat([decrypted, decipher.final()]);
-    // return decrypted.toString();
   }
 
   static hashingData(data: string, pepper: string) {

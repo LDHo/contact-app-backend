@@ -1,24 +1,25 @@
-import {UserCredentials, UserCredentialsRepository, UserServiceBindings} from '@loopback/authentication-jwt';
 import {inject} from '@loopback/core';
 import {DefaultCrudRepository, Getter, HasOneRepositoryFactory, juggler, repository} from '@loopback/repository';
 import {MyUser, UserRelations} from '../models';
+import {MyUserCredentials} from '../models/user-credentials.model';
+import {MyUserCredentialsRepository} from './user-credentials.repository';
 
 
 export class UserRepository extends DefaultCrudRepository<
   MyUser,
   typeof MyUser.prototype.id,
   UserRelations
-  > {
+> {
 
   public readonly userCredentials: HasOneRepositoryFactory<
-    UserCredentials,
+    MyUserCredentials,
     typeof MyUser.prototype.id
   >
 
   constructor(
-    @inject(`datasources.${UserServiceBindings.DATASOURCE_NAME}`) dataSource: juggler.DataSource,
+    @inject(`datasources.db`) dataSource: juggler.DataSource,
     @repository.getter('UserCredentialsRepository')
-    protected userCredentialsRepositoryGetter: Getter<UserCredentialsRepository>
+    protected userCredentialsRepositoryGetter: Getter<MyUserCredentialsRepository>
   ) {
     super(MyUser, dataSource);
     this.userCredentials = this.createHasOneRepositoryFactoryFor(
@@ -34,7 +35,7 @@ export class UserRepository extends DefaultCrudRepository<
 
   async findCredentials(
     userId: typeof MyUser.prototype.id
-  ): Promise<UserCredentials | undefined> {
+  ): Promise<MyUserCredentials | undefined> {
     try {
       return await this.userCredentials(userId).get();
     } catch (err) {

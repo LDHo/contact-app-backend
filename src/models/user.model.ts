@@ -1,7 +1,8 @@
-import {UserCredentials} from '@loopback/authentication-jwt';
 import {Entity, hasOne, model, property} from '@loopback/repository';
+import {MyUserCredentials} from './user-credentials.model';
 
 @model({
+  name: 'user',
   settings: {
     indexes: {
       uniqueEmail: {
@@ -19,7 +20,13 @@ export class MyUser extends Entity {
   @property({
     type: 'string',
     id: true,
-    defaultFn: 'uuidv4'
+    defaultFn: 'uuidv4',
+    mysql: {
+      columnName: 'id',
+      dataType: 'varchar',
+      dataLength: 36,
+      nullable: 'N'
+    }
   })
   id: string;
 
@@ -29,9 +36,15 @@ export class MyUser extends Entity {
     jsonSchema: {
       minLength: 2,
       maxLength: 50
+    },
+    mysql: {
+      columnName: 'last_name',
+      dataType: 'varchar',
+      dataLength: 50,
+      nullable: 'Y'
     }
   })
-  lastName: string;
+  lastName?: string;
 
   @property({
     type: 'string',
@@ -39,15 +52,25 @@ export class MyUser extends Entity {
     jsonSchema: {
       minLength: 2,
       maxLength: 50
+    },
+    mysql: {
+      columnName: 'first_name',
+      dataType: 'varchar',
+      dataLength: 50,
+      nullable: 'Y'
     }
   })
-  firstName: string;
+  firstName?: string;
 
   @property({
     type: 'date',
     required: false,
+    mysql: {
+      columnName: 'birthday',
+      nullable: 'Y'
+    }
   })
-  birthday: string;
+  birthday?: string;
 
   @property({
     type: 'string',
@@ -61,41 +84,38 @@ export class MyUser extends Entity {
       maxLength: 100,
       uniqueItems: true,
       transform: ['toLowerCase']
+    },
+    mysql: {
+      columnName: 'email',
+      dataType: 'varchar',
+      dataLength: 50,
+      nullable: 'N'
     }
   })
   email: string;
 
   @property({
     type: 'string',
-    required: true,
-    jsonSchema: {
-      minLength: 10,
-      maxLength: 30,
-      errorMessage: 'Password should be at least 10 to 30 characters'
+    required: false,
+    mysql: {
+      columnName: 'ssn',
+      nullable: 'Y'
     }
   })
-  password: string;
+  ssn?: string;
 
   @property({
     type: 'string',
-    required: true
+    required: false,
+    mysql: {
+      columnName: 'iv',
+      nullable: 'Y'
+    }
   })
-  passwordSalt: string;
+  iv?: string;
 
-  @property({
-    type: 'string',
-    required: false
-  })
-  ssn: string;
-
-  @property({
-    type: 'string',
-    required: false
-  })
-  iv: string;
-
-  @hasOne(() => UserCredentials, {keyTo: 'userId'})
-  userCredentials: UserCredentials;
+  @hasOne(() => MyUserCredentials, {keyTo: 'userId'})
+  userCredentials: MyUserCredentials;
 
   constructor(data?: Partial<MyUser>) {
     super(data);
