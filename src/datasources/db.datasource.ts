@@ -7,9 +7,9 @@ const config = {
   url: '',
   host: 'localhost',
   port: 3306,
-  user: 'liande',
-  password: 'Password1;',
-  database: 'demo'
+  user: 'user',
+  password: 'password',
+  database: 'database'
 };
 
 // Observe application's life cycle to disconnect the datasource when
