@@ -1,7 +1,6 @@
 import * as crypto from 'crypto';
 
 
-const ENC_KEY = 'e06f1086e5f819655c630136abdbe77ecd3ec30bf9bdbe51da8cba3db21f287e';
 const ENCRYPTION_ALGO = 'aes-256-gcm';
 
 
@@ -9,6 +8,8 @@ export interface EncryptedData {
   iv: string;
   data: string;
 }
+const ENC_KEY = 'e06f1086e5f819655c630136abdbe77ecd3ec30bf9bdbe51da8cba3db21f287e';
+
 
 export class CryptoService {
   static encrypt(data: string) {
